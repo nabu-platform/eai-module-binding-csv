@@ -33,7 +33,7 @@ public class Services {
 	private ServiceRuntime runtime;
 	
 	@WebResult(name = "unmarshalled")
-	public Object unmarshal(@WebParam(name = "input") @NotNull InputStream input, @NotNull @WebParam(name = "type") String type, @WebParam(name = "charset") Charset charset, @WebParam(name = "recordSeparator") String recordSeparator, @WebParam(name = "fieldSeparator") String fieldSeparator, @WebParam(name = "quoteCharacter") String quoteCharacter, @WebParam(name = "useHeaders") Boolean useHeaders, @WebParam(name = "windows") List<Window> windows) throws IOException, ParseException {
+	public Object unmarshal(@WebParam(name = "input") @NotNull InputStream input, @NotNull @WebParam(name = "type") String type, @WebParam(name = "charset") Charset charset, @WebParam(name = "recordSeparator") String recordSeparator, @WebParam(name = "fieldSeparator") String fieldSeparator, @WebParam(name = "quote") String quoteCharacter, @WebParam(name = "useHeaders") Boolean useHeaders, @WebParam(name = "trim") Boolean trim, @WebParam(name = "windows") List<Window> windows) throws IOException, ParseException {
 		ComplexType resolve = (ComplexType) EAIResourceRepository.getInstance().resolve(type);
 		CSVBinding binding = new CSVBinding(resolve, charset == null ? Charset.defaultCharset() : charset);
 		if (fieldSeparator != null) {
@@ -46,14 +46,17 @@ public class Services {
 			binding.setUseHeader(useHeaders);
 		}
 		if (quoteCharacter != null) {
-			binding.setQuoteCharacter(quoteCharacter.charAt(0));
+			binding.setQuoteCharacter(quoteCharacter);
+		}
+		if (trim != null) {
+			binding.setTrim(trim);
 		}
 		return binding.unmarshal(input, windows == null || windows.isEmpty() ? new Window[0] : windows.toArray(new Window[windows.size()]));
 	}
 	
 	@SuppressWarnings("unchecked")
 	@WebResult(name = "marshalled")
-	public InputStream marshal(@WebParam(name = "data") @NotNull Object data, @WebParam(name = "charset") Charset charset, @WebParam(name = "recordSeparator") String recordSeparator, @WebParam(name = "fieldSeparator") String fieldSeparator, @WebParam(name = "quoteCharacter") String quoteCharacter, @WebParam(name = "useHeaders") Boolean useHeaders) throws IOException {
+	public InputStream marshal(@WebParam(name = "data") @NotNull Object data, @WebParam(name = "charset") Charset charset, @WebParam(name = "recordSeparator") String recordSeparator, @WebParam(name = "fieldSeparator") String fieldSeparator, @WebParam(name = "quote") String quoteCharacter, @WebParam(name = "useHeaders") Boolean useHeaders) throws IOException {
 		ComplexContent complexContent = data instanceof ComplexContent ? (ComplexContent) data : ComplexContentWrapperFactory.getInstance().getWrapper().wrap(data);
 		CSVBinding binding = new CSVBinding(complexContent.getType(), charset == null ? Charset.defaultCharset() : charset);
 		if (fieldSeparator != null) {
@@ -66,7 +69,7 @@ public class Services {
 			binding.setUseHeader(useHeaders);
 		}
 		if (quoteCharacter != null) {
-			binding.setQuoteCharacter(quoteCharacter.charAt(0));
+			binding.setQuoteCharacter(quoteCharacter);
 		}
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		binding.marshal(output, complexContent);
@@ -75,7 +78,7 @@ public class Services {
 	
 	@SuppressWarnings("unchecked")
 	@WebResult(name = "uri")
-	public URI store(@WebParam(name = "data") @NotNull Object data, @WebParam(name = "charset") Charset charset, @WebParam(name = "context") String context, @WebParam(name = "recordSeparator") String recordSeparator, @WebParam(name = "fieldSeparator") String fieldSeparator, @WebParam(name = "quoteCharacter") String quoteCharacter, @WebParam(name = "useHeaders") Boolean useHeaders) throws URISyntaxException, IOException {
+	public URI store(@WebParam(name = "data") @NotNull Object data, @WebParam(name = "charset") Charset charset, @WebParam(name = "context") String context, @WebParam(name = "recordSeparator") String recordSeparator, @WebParam(name = "fieldSeparator") String fieldSeparator, @WebParam(name = "quote") String quoteCharacter, @WebParam(name = "useHeaders") Boolean useHeaders) throws URISyntaxException, IOException {
 		ComplexContent complexContent = data instanceof ComplexContent ? (ComplexContent) data : ComplexContentWrapperFactory.getInstance().getWrapper().wrap(data);
 		CSVBinding binding = new CSVBinding(complexContent.getType(), charset == null ? Charset.defaultCharset() : charset);
 		if (fieldSeparator != null) {
@@ -88,9 +91,9 @@ public class Services {
 			binding.setUseHeader(useHeaders);
 		}
 		if (quoteCharacter != null) {
-			binding.setQuoteCharacter(quoteCharacter.charAt(0));
+			binding.setQuoteCharacter(quoteCharacter);
 		}
-		DatastoreOutputStream streamable = nabu.frameworks.datastore.Services.streamable(runtime, context, complexContent.getType().getName() + ".json", "application/json");
+		DatastoreOutputStream streamable = nabu.frameworks.datastore.Services.streamable(runtime, context, complexContent.getType().getName() + ".csv", "text/csv");
 		if (streamable != null) {
 			try {
 				binding.marshal(streamable, data instanceof ComplexContent ? (ComplexContent) data : ComplexContentWrapperFactory.getInstance().getWrapper().wrap(data));
@@ -103,7 +106,7 @@ public class Services {
 		else {
 			InputStream marshal = marshal(data, charset, recordSeparator, fieldSeparator, quoteCharacter, useHeaders);
 			ContextualWritableDatastore<String> datastore = nabu.frameworks.datastore.Services.getAsDatastore(this.context);
-			return datastore.store(context, marshal, complexContent.getType().getName() + ".json", "application/json");
+			return datastore.store(context, marshal, complexContent.getType().getName() + ".csv", "text/csv");
 		}
 	}
 }
