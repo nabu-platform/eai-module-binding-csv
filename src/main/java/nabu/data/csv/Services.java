@@ -33,7 +33,7 @@ public class Services {
 	private ServiceRuntime runtime;
 	
 	@WebResult(name = "unmarshalled")
-	public Object unmarshal(@WebParam(name = "input") @NotNull InputStream input, @NotNull @WebParam(name = "type") String type, @WebParam(name = "charset") Charset charset, @WebParam(name = "recordSeparator") String recordSeparator, @WebParam(name = "fieldSeparator") String fieldSeparator, @WebParam(name = "quote") String quoteCharacter, @WebParam(name = "useHeaders") Boolean useHeaders, @WebParam(name = "validateHeaders") Boolean validateHeaders, @WebParam(name = "trim") Boolean trim, @WebParam(name = "windows") List<Window> windows) throws IOException, ParseException {
+	public Object unmarshal(@WebParam(name = "input") @NotNull InputStream input, @NotNull @WebParam(name = "type") String type, @WebParam(name = "charset") Charset charset, @WebParam(name = "recordSeparator") String recordSeparator, @WebParam(name = "fieldSeparator") String fieldSeparator, @WebParam(name = "quote") String quoteCharacter, @WebParam(name = "useHeaders") Boolean useHeaders, @WebParam(name = "validateHeaders") Boolean validateHeaders, @WebParam(name = "trim") Boolean trim, @WebParam(name = "stripExcelLeadingQuote") Boolean stripExcelLeadingQuote, @WebParam(name = "windows") List<Window> windows) throws IOException, ParseException {
 		ComplexType resolve = (ComplexType) EAIResourceRepository.getInstance().resolve(type);
 		CSVBinding binding = new CSVBinding(resolve, charset == null ? Charset.defaultCharset() : charset);
 		if (fieldSeparator != null) {
@@ -53,6 +53,9 @@ public class Services {
 		}
 		if (validateHeaders != null) {
 			binding.setValidateHeader(validateHeaders);
+		}
+		if (stripExcelLeadingQuote != null) {
+			binding.setStripExcelLeadingQuote(stripExcelLeadingQuote);
 		}
 		return binding.unmarshal(input, windows == null || windows.isEmpty() ? new Window[0] : windows.toArray(new Window[windows.size()]));
 	}
