@@ -84,7 +84,10 @@ public class Services {
 	
 	@SuppressWarnings("unchecked")
 	@WebResult(name = "uri")
-	public URI store(@WebParam(name = "data") @NotNull Object data, @WebParam(name = "charset") Charset charset, @WebParam(name = "context") String context, @WebParam(name = "recordSeparator") String recordSeparator, @WebParam(name = "fieldSeparator") String fieldSeparator, @WebParam(name = "quote") String quoteCharacter, @WebParam(name = "useHeaders") Boolean useHeaders) throws URISyntaxException, IOException {
+	public URI store(@WebParam(name = "data") Object data, @WebParam(name = "charset") Charset charset, @WebParam(name = "context") String context, @WebParam(name = "name") String name, @WebParam(name = "recordSeparator") String recordSeparator, @WebParam(name = "fieldSeparator") String fieldSeparator, @WebParam(name = "quote") String quoteCharacter, @WebParam(name = "useHeaders") Boolean useHeaders) throws URISyntaxException, IOException {
+		if (data == null) {
+			return null;
+		}
 		ComplexContent complexContent = data instanceof ComplexContent ? (ComplexContent) data : ComplexContentWrapperFactory.getInstance().getWrapper().wrap(data);
 		CSVBinding binding = new CSVBinding(complexContent.getType(), charset == null ? Charset.defaultCharset() : charset);
 		if (fieldSeparator != null) {
@@ -99,10 +102,10 @@ public class Services {
 		if (quoteCharacter != null) {
 			binding.setQuoteCharacter(quoteCharacter);
 		}
-		DatastoreOutputStream streamable = nabu.frameworks.datastore.Services.streamable(runtime, context, complexContent.getType().getName() + ".csv", "text/csv");
+		DatastoreOutputStream streamable = nabu.frameworks.datastore.Services.streamable(runtime, context, name == null ? complexContent.getType().getName() + ".csv" : name, "text/csv");
 		if (streamable != null) {
 			try {
-				binding.marshal(streamable, data instanceof ComplexContent ? (ComplexContent) data : ComplexContentWrapperFactory.getInstance().getWrapper().wrap(data));
+				binding.marshal(streamable, complexContent);
 			}
 			finally {
 				streamable.close();
