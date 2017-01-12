@@ -39,6 +39,11 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
+			<groupId>nabu</groupId>
+			<artifactId>eai-module-rest</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>be.nabu.eai</groupId>
 			<artifactId>eai-repository</artifactId>
 			<scope>provided</scope>
