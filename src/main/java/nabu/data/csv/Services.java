@@ -115,7 +115,7 @@ public class Services {
 		else {
 			InputStream marshal = marshal(data, charset, recordSeparator, fieldSeparator, quoteCharacter, useHeaders);
 			ContextualWritableDatastore<String> datastore = nabu.frameworks.datastore.Services.getAsDatastore(this.context);
-			return datastore.store(context, marshal, complexContent.getType().getName() + ".csv", "text/csv");
+			return datastore.store(context, marshal, name == null ? complexContent.getType().getName() + ".csv" : name, "text/csv");
 		}
 	}
 }
