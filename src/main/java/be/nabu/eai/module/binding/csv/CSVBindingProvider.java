@@ -47,7 +47,7 @@ public class CSVBindingProvider implements BindingProvider {
 
 	@Override
 	public String getContentType(MarshallableBinding binding) {
-		return "text/csv";
+		return binding instanceof CSVBinding ? "text/csv" : null;
 	}
 
 
