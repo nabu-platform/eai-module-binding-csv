@@ -79,7 +79,7 @@ public class Services {
 	
 	@SuppressWarnings("unchecked")
 	@WebResult(name = "marshalled")
-	public InputStream marshal(@WebParam(name = "data") @NotNull Object data, @WebParam(name = "charset") Charset charset, @WebParam(name = "recordSeparator") String recordSeparator, @WebParam(name = "fieldSeparator") String fieldSeparator, @WebParam(name = "quote") String quoteCharacter, @WebParam(name = "useHeaders") Boolean useHeaders) throws IOException {
+	public InputStream marshal(@WebParam(name = "data") @NotNull Object data, @WebParam(name = "charset") Charset charset, @WebParam(name = "recordSeparator") String recordSeparator, @WebParam(name = "fieldSeparator") String fieldSeparator, @WebParam(name = "quote") String quoteCharacter, @WebParam(name = "useHeaders") Boolean useHeaders, @WebParam(name = "byteOrderMark") Boolean byteOrderMark, @WebParam(name = "fields") List<String> fields, @WebParam(name = "headers") List<String> headers) throws IOException {
 		ComplexContent complexContent = data instanceof ComplexContent ? (ComplexContent) data : ComplexContentWrapperFactory.getInstance().getWrapper().wrap(data);
 		CSVBinding binding = new CSVBinding(complexContent.getType(), charset == null ? Charset.defaultCharset() : charset);
 		if (fieldSeparator != null) {
@@ -93,6 +93,17 @@ public class Services {
 		}
 		if (quoteCharacter != null) {
 			binding.setQuoteCharacter(quoteCharacter);
+		}
+		// a byte order mark lets spreadsheet programs read the file as UTF-8
+		if (byteOrderMark != null) {
+			binding.setByteOrderMark(byteOrderMark);
+		}
+		// only these fields, in this order, with these labels (an unknown field is refused)
+		if (fields != null && !fields.isEmpty()) {
+			binding.setFields(fields);
+		}
+		if (headers != null && !headers.isEmpty()) {
+			binding.setHeaders(headers);
 		}
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		binding.marshal(output, complexContent);
@@ -130,7 +141,7 @@ public class Services {
 			return streamable.getURI();
 		}
 		else {
-			InputStream marshal = marshal(data, charset, recordSeparator, fieldSeparator, quoteCharacter, useHeaders);
+			InputStream marshal = marshal(data, charset, recordSeparator, fieldSeparator, quoteCharacter, useHeaders, null, null, null);
 			ContextualWritableDatastore<String> datastore = nabu.frameworks.datastore.Services.getAsDatastore(this.context);
 			return datastore.store(context, marshal, name == null ? complexContent.getType().getName() + ".csv" : name, "text/csv");
 		}
